@@ -22,7 +22,7 @@ function FlatListPlace(props) {
     <div>
       {array.length > 0
         ? array.map((list, index) => (
-            <a onClick={lop}>
+            <a key={index} onClick={lop}>
               <div key={index} className="object_list card">
                 <h3>{list.slogan}</h3>
                 <img className="logo" src={list.logo} alt="" />
