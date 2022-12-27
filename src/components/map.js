@@ -1,160 +1,59 @@
-import { useState, useMemo, useCallback, useRef } from "react";
-import {
-  GoogleMap,
-  Marker,
-  DirectionsRenderer,
-  Circle,
-  MarkerClusterer,
-} from "@react-google-maps/api";
-import Places from "./places";
-import Distance from "./distance";
+import React, { useState, useEffect } from "react";
+import { Map, Marker, GoogleApiWrapper } from "google-maps-react";
 
-type LatLngLiteral = google.maps.LatLngLiteral;
-type DirectionsResult = google.maps.DirectionsResult;
-type MapOptions = google.maps.MapOptions;
+/**
+ * @author
+ * @function MapF
+ **/
 
-export default function Map() {
-  const [office, setOffice] = useState<LatLngLiteral>();
-  const [directions, setDirections] = useState<DirectionsResult>();
-  const mapRef = useRef<GoogleMap>();
-  const center = useMemo<LatLngLiteral>(
-    () => ({ lat: 43.45, lng: -80.49 }),
-    []
-  );
-  const options = useMemo<MapOptions>(
-    () => ({
-      mapId: "b181cac70f27f5e6",
-      disableDefaultUI: true,
-      clickableIcons: false,
-    }),
-    []
-  );
-  const onLoad = useCallback((map) => (mapRef.current = map), []);
-  const houses = useMemo(() => generateHouses(center), [center]);
+const ShowMap = (props) => {
+  const [loadData, setLoadData] = useState([]);
 
-  const fetchDirections = (house: LatLngLiteral) => {
-    if (!office) return;
-
-    const service = new google.maps.DirectionsService();
-    service.route(
-      {
-        origin: house,
-        destination: office,
-        travelMode: google.maps.TravelMode.DRIVING,
-      },
-      (result, status) => {
-        if (status === "OK" && result) {
-          setDirections(result);
-        }
-      }
-    );
+  const containerStyle = {
+    width: "500px",
+    height: "500px",
+    position: "relative",
   };
 
+  useEffect(() => {
+    fetch(
+      "https://my.foodtrack.co.il/api/app/truck_by_distance.php?lat=37.785834&lng=-122.406417"
+    )
+      .then((response) => response.json())
+      .then((data) => {
+        setLoadData(data);
+      });
+  }, []);
+
+  function getPosition(point) {
+    const points = {
+      lat: point.latlng.split(",")[0],
+      lng: point.latlng.split(",")[1].split(" ").join(""),
+    };
+
+    console.log(points);
+    return points;
+  }
+
   return (
-    <div className="container">
-      <div className="controls">
-        <h1>Commute?</h1>
-        <Places
-          setOffice={(position) => {
-            setOffice(position);
-            mapRef.current?.panTo(position);
-          }}
-        />
-        {!office && <p>Enter the address of your office.</p>}
-        {directions && <Distance leg={directions.routes[0].legs[0]} />}
-      </div>
-      <div className="map">
-        <GoogleMap
-          zoom={10}
-          center={center}
-          mapContainerClassName="map-container"
-          options={options}
-          onLoad={onLoad}
-        >
-          {directions && (
-            <DirectionsRenderer
-              directions={directions}
-              options={{
-                polylineOptions: {
-                  zIndex: 50,
-                  strokeColor: "#1976D2",
-                  strokeWeight: 5,
-                },
-              }}
-            />
-          )}
-
-          {office && (
-            <>
-              <Marker
-                position={office}
-                icon="https://developers.google.com/maps/documentation/javascript/examples/full/images/beachflag.png"
-              />
-
-              <MarkerClusterer>
-                {(clusterer) =>
-                  houses.map((house) => (
-                    <Marker
-                      key={house.lat}
-                      position={house}
-                      clusterer={clusterer}
-                      onClick={() => {
-                        fetchDirections(house);
-                      }}
-                    />
-                  ))
-                }
-              </MarkerClusterer>
-
-              <Circle center={office} radius={15000} options={closeOptions} />
-              <Circle center={office} radius={30000} options={middleOptions} />
-              <Circle center={office} radius={45000} options={farOptions} />
-            </>
-          )}
-        </GoogleMap>
-      </div>
+    <div>
+      <Map
+        google={props.google}
+        zoom={14}
+        style={containerStyle}
+        initialCenter={{
+          lat: 32.0853,
+          lng: 34.781769,
+        }}
+      >
+        {loadData.map((wq, index) => (
+          <Marker key={index} position={getPosition(wq)} />
+        ))}
+      </Map>
     </div>
   );
-}
-
-const defaultOptions = {
-  strokeOpacity: 0.5,
-  strokeWeight: 2,
-  clickable: false,
-  draggable: false,
-  editable: false,
-  visible: true,
-};
-const closeOptions = {
-  ...defaultOptions,
-  zIndex: 3,
-  fillOpacity: 0.05,
-  strokeColor: "#8BC34A",
-  fillColor: "#8BC34A",
-};
-const middleOptions = {
-  ...defaultOptions,
-  zIndex: 2,
-  fillOpacity: 0.05,
-  strokeColor: "#FBC02D",
-  fillColor: "#FBC02D",
-};
-const farOptions = {
-  ...defaultOptions,
-  zIndex: 1,
-  fillOpacity: 0.05,
-  strokeColor: "#FF5252",
-  fillColor: "#FF5252",
 };
 
-const generateHouses = (position: LatLngLiteral) => {
-  const _houses: Array<LatLngLiteral> = [];
-  for (let i = 0; i < 100; i++) {
-    const direction = Math.random() < 0.5 ? -2 : 2;
-    _houses.push({
-      lat: position.lat + Math.random() / direction,
-      lng: position.lng + Math.random() / direction,
-    });
-  }
-  return _houses;
-};
+export default GoogleApiWrapper({
+  apiKey: process.env.REACT_APP_KEYMAP,
+})(ShowMap);

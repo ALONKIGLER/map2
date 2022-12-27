@@ -1,6 +1,6 @@
 import React from "react";
-import FlatListPlace from "./FlatMap";
-import ShowMap from "../components/function";
+import FlatListPlace from "../components/FlatMap";
+import ShowMap from "../components/map";
 import "./css.css";
 
 export default function Mainmap() {
