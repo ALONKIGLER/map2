@@ -1,10 +1,10 @@
 import "./App.css";
-import MaimMap from "./page/mainMap";
+import ShowMap from "./components/map";
 
 function App() {
   return (
     <div className="App">
-      <MaimMap />
+      <ShowMap />
     </div>
   );
 }
