@@ -1,14 +1,20 @@
 
 
-comp map=>
-1. fetch data using the fetch function (inside useEffact) and save the data in the array State
-2.inside the return() => map function and render the list
- 
+ShowMap comp =>
+first i fetch data using the fetch function (inside useEffact) and save the data in loadData Stat
 
-comp flatMap=>
-1. fetch data using the fetch function (inside useEffact) and save the data in loadData State
-2.inside the return() => map function
-3. sand the object inside the map to getPosition fun to get only the position
+in the return() there are 2 parts, one for the List and the other for the map 
 
+ // list part
+1. I use the map function to return the list.
+2. if the user clicks on the card, flag up and shows the card.
+3. if not click, show all the cards.
 
+// map part
+sand the object to return Marker 
+1.position={getPosition(wq)}  getPosition => return only the point from the object
+2.onClick={() => onMarkerClick(wq)} onMarkerClick=> 
+setSelectedPoint to show the picked card   and setinitialCenter to centre the map
+
+// css
 css=> grid
